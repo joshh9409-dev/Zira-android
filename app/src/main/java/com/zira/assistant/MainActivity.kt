@@ -16,10 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,10 +33,10 @@ enum class ZiraState {
     ERROR
 }
 
-private val Space = Color(0xFF050008)
 private val Purple = Color(0xFFB967FF)
-private val Bright = Color(0xFFF1D9FF)
-private val Deep = Color(0xFF160020)
+private val LightPurple = Color(0xFFF0D7FF)
+private val DarkPurple = Color(0xFF160020)
+private val Black = Color(0xFF050008)
 
 class MainActivity : ComponentActivity() {
 
@@ -62,11 +59,21 @@ private fun ZiraApp() {
     val message = when (state) {
         ZiraState.IDLE -> "Online, sir. What do you need, Josh?"
         ZiraState.LISTENING -> "I'm listening, sir."
-        ZiraState.THINKING -> "One moment, Josh..."
+        ZiraState.THINKING -> "Thinking..."
         ZiraState.SPEAKING -> "Right away, sir."
-        ZiraState.PERMISSION -> "Permission required, Josh. Proceed?"
+        ZiraState.PERMISSION -> "Permission required, Josh."
         ZiraState.SUCCESS -> "Done, sir."
-        ZiraState.ERROR -> "Something went wrong, Josh."
+        ZiraState.ERROR -> "Something went wrong."
+    }
+
+    val status = when (state) {
+        ZiraState.IDLE -> "READY • STANDING BY"
+        ZiraState.LISTENING -> "LISTENING"
+        ZiraState.THINKING -> "THINKING"
+        ZiraState.SPEAKING -> "SPEAKING"
+        ZiraState.PERMISSION -> "AWAITING PERMISSION"
+        ZiraState.SUCCESS -> "TASK COMPLETE"
+        ZiraState.ERROR -> "SYSTEM ERROR"
     }
 
     Box(
@@ -75,8 +82,8 @@ private fun ZiraApp() {
             .background(
                 Brush.verticalGradient(
                     listOf(
-                        Color(0xFF180025),
-                        Space,
+                        Color(0xFF190027),
+                        Black,
                         Color.Black
                     )
                 )
@@ -92,7 +99,7 @@ private fun ZiraApp() {
 
             Text(
                 text = "ZIRA",
-                color = Bright,
+                color = LightPurple,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -117,12 +124,11 @@ private fun ZiraApp() {
 
             Text(
                 text = message,
-                color = Bright,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium
+                color = LightPurple,
+                fontSize = 16.sp
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -130,12 +136,11 @@ private fun ZiraApp() {
             ) {
 
                 ZiraButton("MIC") {
-                    state =
-                        if (state == ZiraState.LISTENING) {
-                            ZiraState.IDLE
-                        } else {
-                            ZiraState.LISTENING
-                        }
+                    state = if (state == ZiraState.LISTENING) {
+                        ZiraState.IDLE
+                    } else {
+                        ZiraState.LISTENING
+                    }
                 }
 
                 ZiraButton("CHAT") {
@@ -150,18 +155,10 @@ private fun ZiraApp() {
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = when (state) {
-                    ZiraState.IDLE -> "READY • STANDING BY"
-                    ZiraState.LISTENING -> "LISTENING • MICROPHONE ACTIVE"
-                    ZiraState.THINKING -> "PROCESSING • THINKING"
-                    ZiraState.SPEAKING -> "SPEAKING • ZIRA ACTIVE"
-                    ZiraState.PERMISSION -> "AWAITING PERMISSION"
-                    ZiraState.SUCCESS -> "TASK COMPLETE"
-                    ZiraState.ERROR -> "SYSTEM ATTENTION REQUIRED"
-                },
+                text = status,
                 color = Purple.copy(alpha = 0.8f),
                 fontSize = 10.sp,
-                letterSpacing = 1.4.sp
+                letterSpacing = 1.5.sp
             )
         }
     }
@@ -170,31 +167,30 @@ private fun ZiraApp() {
 @Composable
 private fun ZiraButton(
     text: String,
-    onClick: () -> Unit
+    action: () -> Unit
 ) {
 
     Box(
         modifier = Modifier
             .size(92.dp, 46.dp)
-            .clip(RoundedCornerShape(23.dp))
+            .clip(RoundedCornerShape(24.dp))
             .background(Color(0xFF190027))
             .border(
                 1.dp,
-                Purple.copy(alpha = 0.8f),
-                RoundedCornerShape(23.dp)
+                Purple,
+                RoundedCornerShape(24.dp)
             )
             .clickable {
-                onClick()
+                action()
             },
         contentAlignment = Alignment.Center
     ) {
 
         Text(
             text = text,
-            color = Bright,
+            color = LightPurple,
             fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 1.sp
+            fontWeight = FontWeight.Bold
         )
     }
 }
@@ -202,125 +198,101 @@ private fun ZiraButton(
 @Composable
 private fun ZiraOrb(state: ZiraState) {
 
-    val transition = rememberInfiniteTransition(
+    val animation = rememberInfiniteTransition(
         label = "zira"
     )
 
-    val rotation by transition.animateFloat(
+    val rotation by animation.animateFloat(
         initialValue = 0f,
         targetValue = 360f,
         animationSpec = infiniteRepeatable(
             animation = tween(
-                9000,
+                8000,
                 easing = LinearEasing
             )
         ),
         label = "rotation"
     )
 
-    val pulse by transition.animateFloat(
-        initialValue = 0.82f,
+    val pulse by animation.animateFloat(
+        initialValue = 0.9f,
         targetValue = 1.08f,
         animationSpec = infiniteRepeatable(
             animation = tween(
-                if (state == ZiraState.SPEAKING) {
-                    300
-                } else if (state == ZiraState.LISTENING) {
-                    600
-                } else {
-                    1400
-                }
+                if (state == ZiraState.SPEAKING) 300
+                else if (state == ZiraState.LISTENING) 600
+                else 1400
             ),
             repeatMode = RepeatMode.Reverse
         ),
         label = "pulse"
     )
 
-    val movement by transition.animateFloat(
-        initialValue = -1f,
-        targetValue = 1f,
+    val floatY by animation.animateFloat(
+        initialValue = -4f,
+        targetValue = 4f,
         animationSpec = infiniteRepeatable(
-            animation = tween(
-                if (state == ZiraState.THINKING) {
-                    500
-                } else {
-                    1800
-                }
-            ),
+            animation = tween(1800),
             repeatMode = RepeatMode.Reverse
         ),
-        label = "movement"
+        label = "float"
     )
 
     Canvas(
-        modifier = Modifier.size(365.dp)
+        modifier = Modifier.size(350.dp)
     ) {
 
-        val cx = size.width / 2f
-        val cy = size.height / 2f
+        val centerX = size.width / 2f
+        val centerY = size.height / 2f
         val radius = size.minDimension * 0.34f
-
-        val activeColor =
-            if (state == ZiraState.ERROR) {
-                Purple
-            } else {
-                Bright
-            }
-
-        val intensity =
-            if (state == ZiraState.IDLE) {
-                0.7f
-            } else {
-                1.15f
-            }
 
         drawCircle(
             brush = Brush.radialGradient(
                 listOf(
-                    Purple.copy(alpha = 0.32f * intensity),
-                    Purple.copy(alpha = 0.1f),
+                    Purple.copy(alpha = 0.4f),
+                    Purple.copy(alpha = 0.12f),
                     Color.Transparent
                 )
             ),
-            radius = radius * 1.65f,
-            center = Offset(cx, cy)
+            radius = radius * 1.6f,
+            center = Offset(centerX, centerY)
         )
 
         drawCircle(
             brush = Brush.radialGradient(
                 listOf(
-                    Color(0xFF7020B5),
-                    Deep,
-                    Color(0xFF08000C)
+                    Color(0xFF7624BE),
+                    DarkPurple,
+                    Black
                 )
             ),
             radius = radius,
-            center = Offset(cx, cy)
+            center = Offset(centerX, centerY)
         )
 
         drawCircle(
-            color = Purple.copy(alpha = 0.9f),
+            color = Purple,
             radius = radius * pulse,
-            center = Offset(cx, cy),
+            center = Offset(centerX, centerY),
             style = Stroke(3f)
         )
 
         drawCircle(
-            color = Bright.copy(alpha = 0.25f),
+            color = LightPurple.copy(alpha = 0.3f),
             radius = radius * 0.86f,
-            center = Offset(cx, cy),
+            center = Offset(centerX, centerY),
             style = Stroke(1.5f)
         )
 
         drawOval(
-            color = Purple.copy(alpha = 0.7f),
+            color = Purple.copy(alpha = 0.75f),
             topLeft = Offset(
-                cx - radius * 1.18f,
-                cy - radius * 0.42f
+                centerX - radius * 1.2f,
+                centerY - radius * 0.4f
             ),
             size = androidx.compose.ui.geometry.Size(
-                radius * 2.36f,
-                radius * 0.84f
+                radius * 2.4f,
+                radius * 0.8f
             ),
             style = Stroke(2f)
         )
@@ -330,32 +302,32 @@ private fun ZiraOrb(state: ZiraState) {
         )
 
         drawCircle(
-            color = Bright,
-            radius = 5f * pulse,
+            color = LightPurple,
+            radius = 5f,
             center = Offset(
-                cx + cos(angle).toFloat() * radius * 1.2f,
-                cy + sin(angle).toFloat() * radius * 0.42f
+                centerX + cos(angle).toFloat() * radius * 1.2f,
+                centerY + sin(angle).toFloat() * radius * 0.4f
             )
         )
 
         if (state == ZiraState.LISTENING) {
 
             drawCircle(
-                color = Bright.copy(alpha = 0.45f),
+                color = LightPurple.copy(alpha = 0.5f),
                 radius = radius * 1.25f * pulse,
-                center = Offset(cx, cy),
+                center = Offset(centerX, centerY),
                 style = Stroke(2f)
             )
 
             drawLine(
-                color = Bright.copy(alpha = 0.65f),
+                color = LightPurple.copy(alpha = 0.7f),
                 start = Offset(
-                    cx - radius,
-                    cy + movement * 45f
+                    centerX - radius,
+                    centerY + floatY * 8f
                 ),
                 end = Offset(
-                    cx + radius,
-                    cy + movement * 45f
+                    centerX + radius,
+                    centerY + floatY * 8f
                 ),
                 strokeWidth = 2f
             )
@@ -365,17 +337,14 @@ private fun ZiraOrb(state: ZiraState) {
 
             for (i in 0..2) {
 
-                val particleAngle =
-                    angle + i * 2.1
+                val a = angle + i * 2.1
 
                 drawCircle(
-                    color = Bright,
+                    color = LightPurple,
                     radius = 4f,
                     center = Offset(
-                        cx + cos(particleAngle).toFloat() *
-                            radius * 1.35f,
-                        cy + sin(particleAngle).toFloat() *
-                            radius * 1.35f
+                        centerX + cos(a).toFloat() * radius * 1.35f,
+                        centerY + sin(a).toFloat() * radius * 1.35f
                     )
                 )
             }
@@ -384,9 +353,9 @@ private fun ZiraOrb(state: ZiraState) {
         if (state == ZiraState.SUCCESS) {
 
             drawCircle(
-                color = Bright.copy(alpha = 0.7f),
+                color = LightPurple.copy(alpha = 0.7f),
                 radius = radius * 1.3f * pulse,
-                center = Offset(cx, cy),
+                center = Offset(centerX, centerY),
                 style = Stroke(4f)
             )
         }
@@ -395,21 +364,20 @@ private fun ZiraOrb(state: ZiraState) {
 
             drawCircle(
                 color = Purple,
-                radius = radius * (1.12f + pulse * 0.1f),
-                center = Offset(cx, cy),
+                radius = radius * 1.2f,
+                center = Offset(centerX, centerY),
                 style = Stroke(4f)
             )
         }
 
         drawAvatar(
-            center = Offset(
-                cx,
-                cy + movement * 4f
+            Offset(
+                centerX,
+                centerY + floatY
             ),
-            scale = radius / 100f,
-            state = state,
-            pulse = pulse,
-            glow = activeColor
+            radius / 100f,
+            state,
+            pulse
         )
     }
 }
@@ -418,26 +386,25 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawAvatar(
     center: Offset,
     scale: Float,
     state: ZiraState,
-    pulse: Float,
-    glow: Color
+    pulse: Float
 ) {
 
     val head = Offset(
         center.x,
-        center.y - 48f * scale
+        center.y - 45f * scale
     )
 
-    val lineColor = glow.copy(alpha = 0.85f)
+    val glow = LightPurple.copy(alpha = 0.85f)
 
     drawCircle(
         color = Purple.copy(alpha = 0.2f),
-        radius = 25f * scale * pulse,
+        radius = 24f * scale * pulse,
         center = head
     )
 
     drawCircle(
-        color = lineColor,
-        radius = 13f * scale,
+        color = glow,
+        radius = 12f * scale,
         center = head,
         style = Stroke(2.5f * scale)
     )
@@ -445,69 +412,4 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawAvatar(
     val hair = Path().apply {
 
         moveTo(
-            head.x - 13f * scale,
-            head.y - 8f * scale
-        )
-
-        quadraticTo(
-            head.x - 29f * scale,
-            head.y + 5f * scale,
-            head.x - 19f * scale,
-            head.y + 27f * scale
-        )
-
-        quadraticTo(
-            head.x - 8f * scale,
-            head.y + 13f * scale,
-            head.x,
-            head.y + 7f * scale
-        )
-
-        quadraticTo(
-            head.x + 8f * scale,
-            head.y + 13f * scale,
-            head.x + 19f * scale,
-            head.y + 27f * scale
-        )
-
-        quadraticTo(
-            head.x + 29f * scale,
-            head.y + 5f * scale,
-            head.x + 13f * scale,
-            head.y - 8f * scale
-        )
-    }
-
-    drawPath(
-        path = hair,
-        color = Purple.copy(alpha = 0.75f),
-        style = Stroke(3f * scale)
-    )
-
-    val body = Path().apply {
-
-        moveTo(
-            center.x - 10f * scale,
-            center.y - 34f * scale
-        )
-
-        cubicTo(
-            center.x - 22f * scale,
-            center.y - 20f * scale,
-            center.x - 22f * scale,
-            center.y + 3f * scale,
-            center.x - 15f * scale,
-            center.y + 20f * scale
-        )
-
-        cubicTo(
-            center.x - 11f * scale,
-            center.y + 35f * scale,
-            center.x - 10f * scale,
-            center.y + 45f * scale,
-            center.x - 13f * scale,
-            center.y + 58f * scale
-        )
-
-        moveTo(
-            center.x
+            head
