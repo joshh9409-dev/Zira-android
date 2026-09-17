@@ -3,37 +3,26 @@ package com.zira.assistant
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.math.cos
+import kotlin.math.sin
 
 class MainActivity : ComponentActivity() {
 
@@ -46,180 +35,381 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@androidx.compose.runtime.Composable
+@Composable
 fun ZiraScreen() {
 
-    val infiniteTransition = rememberInfiniteTransition(label = "ziraPulse")
+    val transition = rememberInfiniteTransition(label = "zira")
 
-    val pulse by infiniteTransition.animateFloat(
-        initialValue = 0.88f,
-        targetValue = 1.12f,
+    val rotation by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1800),
-            repeatMode = RepeatMode.Reverse
+            tween(9000, easing = LinearEasing)
         ),
-        label = "pulse"
+        label = "rotation"
     )
 
-    val glow by infiniteTransition.animateFloat(
-        initialValue = 0.35f,
-        targetValue = 0.75f,
+    val pulse by transition.animateFloat(
+        initialValue = 0.96f,
+        targetValue = 1.04f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1800),
-            repeatMode = RepeatMode.Reverse
+            tween(1800),
+            RepeatMode.Reverse
         ),
-        label = "glow"
+        label = "pulse"
     )
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    listOf(
-                        Color(0xFF050008),
-                        Color(0xFF10001C),
-                        Color(0xFF050008)
-                    )
-                )
-            )
-            .padding(24.dp)
+            .background(Color(0xFF050008))
     ) {
 
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(Modifier.height(28.dp))
 
             Text(
                 text = "ZIRA",
-                color = Color(0xFFE0B0FF),
+                color = Color(0xFFE0AAFF),
                 fontSize = 38.sp,
                 fontWeight = FontWeight.Light,
                 letterSpacing = 8.sp
             )
 
             Text(
-                text = "ONLINE",
-                color = Color(0xFFB96CFF),
-                fontSize = 12.sp,
-                letterSpacing = 4.sp
+                text = "HOLOGRAPHIC CORE",
+                color = Color(0xFF9D5AC7),
+                fontSize = 10.sp,
+                letterSpacing = 3.sp
             )
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(Modifier.weight(1f))
 
-            Box(
-                modifier = Modifier.size(250.dp),
-                contentAlignment = Alignment.Center
-            ) {
+            HologramOrb(
+                rotation = rotation,
+                pulse = pulse
+            )
 
-                Box(
-                    modifier = Modifier
-                        .size(230.dp)
-                        .scale(pulse)
-                        .alpha(glow)
-                        .background(
-                            Brush.radialGradient(
-                                listOf(
-                                    Color(0xFFB84DFF),
-                                    Color(0x664D00FF),
-                                    Color.Transparent
-                                )
-                            ),
-                            CircleShape
-                        )
-                )
-
-                Box(
-                    modifier = Modifier
-                        .size(165.dp)
-                        .background(
-                            Brush.radialGradient(
-                                listOf(
-                                    Color(0xFFE5B5FF),
-                                    Color(0xFF9C27FF),
-                                    Color(0xFF3B0066)
-                                )
-                            ),
-                            CircleShape
-                        )
-                        .border(
-                            2.dp,
-                            Color(0xFFD889FF),
-                            CircleShape
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-
-                    Box(
-                        modifier = Modifier
-                            .size(70.dp)
-                            .background(
-                                Color.White.copy(alpha = 0.18f),
-                                CircleShape
-                            )
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(Modifier.height(25.dp))
 
             Text(
                 text = "Online, sir.",
-                color = Color(0xFFE7D4FF),
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Medium
+                color = Color(0xFFE7D5FF),
+                fontSize = 23.sp
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(Modifier.height(5.dp))
 
             Text(
                 text = "What do you need, Josh?",
-                color = Color(0xFFBCA6C9),
+                color = Color(0xFFB9A2C7),
                 fontSize = 15.sp
             )
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(Modifier.weight(1f))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
 
-                ZiraButton(
-                    text = "MIC",
-                    modifier = Modifier.weight(1f)
-                )
-
-                ZiraButton(
-                    text = "CHAT",
-                    modifier = Modifier.weight(1f)
-                )
-
-                ZiraButton(
-                    text = "MENU",
-                    modifier = Modifier.weight(1f)
-                )
+                ZiraButton("MIC", Modifier.weight(1f))
+                ZiraButton("CHAT", Modifier.weight(1f))
+                ZiraButton("MENU", Modifier.weight(1f))
             }
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(Modifier.height(18.dp))
 
             Text(
-                text = "READY • LISTENING FOR COMMAND",
-                color = Color(0xFF8E6AA3),
+                text = "READY • ZIRA ONLINE",
+                color = Color(0xFF765487),
                 fontSize = 10.sp,
-                letterSpacing = 1.5.sp,
-                textAlign = TextAlign.Center
+                letterSpacing = 2.sp
             )
 
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(Modifier.height(15.dp))
         }
     }
 }
 
-@androidx.compose.runtime.Composable
+@Composable
+fun HologramOrb(
+    rotation: Float,
+    pulse: Float
+) {
+
+    Box(
+        modifier = Modifier
+            .size(310.dp)
+            .scale(pulse),
+        contentAlignment = Alignment.Center
+    ) {
+
+        Canvas(
+            modifier = Modifier.fillMaxSize()
+        ) {
+
+            val center = Offset(size.width / 2f, size.height / 2f)
+            val radius = size.minDimension * 0.42f
+
+            // Outer atmospheric glow
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        Color(0xAA9B27FF),
+                        Color(0x553C0870),
+                        Color.Transparent
+                    ),
+                    center = center,
+                    radius = radius * 1.8f
+                ),
+                radius = radius * 1.8f,
+                center = center
+            )
+
+            // Main glass sphere
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        Color(0xFFE0A8FF),
+                        Color(0xFF9C27FF),
+                        Color(0xFF3A0068),
+                        Color(0xFF12001F)
+                    ),
+                    center = Offset(
+                        center.x - radius * .25f,
+                        center.y - radius * .3f
+                    ),
+                    radius = radius * 1.4f
+                ),
+                radius = radius,
+                center = center
+            )
+
+            // Glass edge
+            drawCircle(
+                color = Color(0xFFD891FF),
+                radius = radius,
+                center = center,
+                style = Stroke(
+                    width = 3.dp.toPx()
+                )
+            )
+
+            // Rotating holographic rings
+            val ringRadius = radius * 0.82f
+
+            for (i in 0..2) {
+
+                val angle = Math.toRadians(
+                    (rotation + i * 120).toDouble()
+                )
+
+                val x = center.x + cos(angle).toFloat() * ringRadius
+                val y = center.y + sin(angle).toFloat() * ringRadius
+
+                drawCircle(
+                    color = Color(0x99E1A4FF),
+                    radius = 8.dp.toPx(),
+                    center = Offset(x, y)
+                )
+            }
+
+            // Horizontal scan lines
+            for (i in -5..5) {
+
+                val y = center.y + i * 18.dp.toPx()
+
+                drawLine(
+                    color = Color(0x228F32FF),
+                    start = Offset(
+                        center.x - radius * .85f,
+                        y
+                    ),
+                    end = Offset(
+                        center.x + radius * .85f,
+                        y
+                    ),
+                    strokeWidth = 1.dp.toPx()
+                )
+            }
+
+            // Holographic female figure
+            drawZiraFigure(
+                center = center,
+                scale = radius / 120f
+            )
+
+            // Central energy core
+            drawCircle(
+                brush = Brush.radialGradient(
+                    listOf(
+                        Color.White,
+                        Color(0xFFD68CFF),
+                        Color(0x669C27FF),
+                        Color.Transparent
+                    )
+                ),
+                radius = 28.dp.toPx(),
+                center = center
+            )
+        }
+    }
+}
+
+fun androidx.compose.ui.graphics.drawscope.DrawScope.drawZiraFigure(
+    center: Offset,
+    scale: Float
+) {
+
+    val glow = Color(0xFFD99AFF)
+
+    // Head
+    drawCircle(
+        color = glow.copy(alpha = .85f),
+        radius = 19f * scale,
+        center = Offset(
+            center.x,
+            center.y - 58f * scale
+        )
+    )
+
+    // Neck
+    drawLine(
+        color = glow.copy(alpha = .75f),
+        start = Offset(
+            center.x,
+            center.y - 39f * scale
+        ),
+        end = Offset(
+            center.x,
+            center.y - 28f * scale
+        ),
+        strokeWidth = 7f * scale
+    )
+
+    // Torso
+    val torsoPath = Path().apply {
+
+        moveTo(
+            center.x - 25f * scale,
+            center.y - 28f * scale
+        )
+
+        quadraticTo(
+            center.x - 34f * scale,
+            center.y + 10f * scale,
+            center.x - 18f * scale,
+            center.y + 42f * scale
+        )
+
+        lineTo(
+            center.x + 18f * scale,
+            center.y + 42f * scale
+        )
+
+        quadraticTo(
+            center.x + 34f * scale,
+            center.y + 10f * scale,
+            center.x + 25f * scale,
+            center.y - 28f * scale
+        )
+
+        close()
+    }
+
+    drawPath(
+        path = torsoPath,
+        color = glow.copy(alpha = .52f)
+    )
+
+    // Left arm
+    drawLine(
+        color = glow.copy(alpha = .75f),
+        start = Offset(
+            center.x - 24f * scale,
+            center.y - 22f * scale
+        ),
+        end = Offset(
+            center.x - 50f * scale,
+            center.y + 30f * scale
+        ),
+        strokeWidth = 8f * scale,
+        cap = StrokeCap.Round
+    )
+
+    // Right arm
+    drawLine(
+        color = glow.copy(alpha = .75f),
+        start = Offset(
+            center.x + 24f * scale,
+            center.y - 22f * scale
+        ),
+        end = Offset(
+            center.x + 50f * scale,
+            center.y + 30f * scale
+        ),
+        strokeWidth = 8f * scale,
+        cap = StrokeCap.Round
+    )
+
+    // Left leg
+    drawLine(
+        color = glow.copy(alpha = .8f),
+        start = Offset(
+            center.x - 10f * scale,
+            center.y + 40f * scale
+        ),
+        end = Offset(
+            center.x - 24f * scale,
+            center.y + 92f * scale
+        ),
+        strokeWidth = 9f * scale,
+        cap = StrokeCap.Round
+    )
+
+    // Right leg
+    drawLine(
+        color = glow.copy(alpha = .8f),
+        start = Offset(
+            center.x + 10f * scale,
+            center.y + 40f * scale
+        ),
+        end = Offset(
+            center.x + 24f * scale,
+            center.y + 92f * scale
+        ),
+        strokeWidth = 9f * scale,
+        cap = StrokeCap.Round
+    )
+
+    // Holographic scan highlights
+    for (i in 0..5) {
+
+        val y = center.y - 75f * scale + i * 30f * scale
+
+        drawLine(
+            color = Color.White.copy(alpha = .18f),
+            start = Offset(
+                center.x - 45f * scale,
+                y
+            ),
+            end = Offset(
+                center.x + 45f * scale,
+                y
+            ),
+            strokeWidth = 1.5f * scale
+        )
+    }
+}
+
+@Composable
 fun ZiraButton(
     text: String,
     modifier: Modifier = Modifier
@@ -229,12 +419,7 @@ fun ZiraButton(
         modifier = modifier
             .height(52.dp)
             .background(
-                Color(0x331B002B),
-                RoundedCornerShape(18.dp)
-            )
-            .border(
-                1.dp,
-                Color(0xFF7E35A6),
+                Color(0x221A0028),
                 RoundedCornerShape(18.dp)
             ),
         contentAlignment = Alignment.Center
@@ -244,8 +429,7 @@ fun ZiraButton(
             text = text,
             color = Color(0xFFD8A5FF),
             fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
-            letterSpacing = 1.5.sp
+            letterSpacing = 2.sp
         )
     }
 }
