@@ -4,6 +4,12 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
 android {
     namespace = "com.zira.assistant"
     compileSdk = 35
@@ -28,10 +34,6 @@ android {
 
 kotlin {
     jvmToolchain(17)
-}
-
-tasks.withType<JavaCompile>().configureEach {
-    options.release.set(17)
 }
 
 dependencies {
